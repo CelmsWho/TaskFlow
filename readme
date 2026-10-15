@@ -1,0 +1,16 @@
+# TaskFlow
+
+Uzdevumu un projektu pārvaldības lietotne (Node.js + Express + MySQL).
+
+## Palaišana
+1. `npm install`
+2. Nokopē `.env.example` uz `.env` un aizpildi MySQL datus
+3. `npm start` un atver http://localhost:3000
+
+Datubāzes tabulas tiek izveidotas un atjaunotas automātiski.
+
+## Funkcijas
+- Reģistrācija un pieslēgšanās (JWT)
+- Personīgie uzdevumi: izveide, labošana, dzēšana, filtrēšana pēc prioritātes
+- Kopīgie projekti ar Kanban dēli, dalībnieku uzaicināšanu, atteikšanos no projekta
+- Responsīvs dizains (galddators un telefons)
