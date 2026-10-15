@@ -1,0 +1,65 @@
+<svg width="1440" height="900" viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Tumšs, daļēji caurspīdīgs overlay fons virs Dashboard -->
+  <rect width="1440" height="900" fill="#020617" fill-opacity="0.75"/>
+
+  <!-- Modālais Logs (Centrā) -->
+  <rect x="470" y="140" width="500" height="620" rx="16" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+
+  <!-- Modālā Loga Galvene -->
+  <text x="502" y="185" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="20" font-weight="700">Izveidot jaunu uzdevumu</text>
+  
+  <!-- Aizvēršanas Poga (X) -->
+  <circle cx="938" cy="180" r="14" fill="#0F172A"/>
+  <path d="M933 175L943 185M943 175L933 185" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+
+  <line x1="470" y1="210" x2="970" y2="210" stroke="#334155" stroke-width="1"/>
+
+  <!-- Lauks 1: Uzdevuma nosaukums -->
+  <text x="502" y="245" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="13" font-weight="600">Uzdevuma nosaukums *</text>
+  <rect x="502" y="255" width="436" height="44" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+  <text x="518" y="282" fill="#94A3B8" font-family="Inter, sans-serif" font-size="14">Piem., Izstrādāt datubāzes shēmu</text>
+
+  <!-- Lauks 2: Apraksts -->
+  <text x="502" y="325" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="13" font-weight="600">Apraksts</text>
+  <rect x="502" y="335" width="436" height="90" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+  <text x="518" y="362" fill="#94A3B8" font-family="Inter, sans-serif" font-size="14">Pievieno papildu detaļas vai instrukcijas...</text>
+
+  <!-- Lauks 3 & 4: Termiņš un Prioritāte (Side-by-Side) -->
+  
+  <!-- Termiņš -->
+  <text x="502" y="455" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="13" font-weight="600">Termiņš *</text>
+  <rect x="502" y="465" width="210" height="44" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+  <!-- Kalendāra ikona (vienkāršots) un teksts -->
+  <rect x="518" y="479" width="16" height="16" rx="2" fill="none" stroke="#94A3B8" stroke-width="1.5"/>
+  <text x="544" y="492" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="13">2026-10-15</text>
+
+  <!-- Prioritātes Izvēle -->
+  <text x="728" y="455" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="13" font-weight="600">Prioritāte *</text>
+  <!-- Low -->
+  <rect x="728" y="465" width="60" height="44" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+  <text x="758" y="492" text-anchor="middle" fill="#10B981" font-family="Inter, sans-serif" font-size="12" font-weight="600">Low</text>
+  <!-- Medium (Select) -->
+  <rect x="794" y="465" width="70" height="44" rx="8" fill="#F59E0B" fill-opacity="0.2" stroke="#F59E0B" stroke-width="1.5"/>
+  <text x="829" y="492" text-anchor="middle" fill="#F59E0B" font-family="Inter, sans-serif" font-size="12" font-weight="700">Medium</text>
+  <!-- High -->
+  <rect x="870" y="465" width="68" height="44" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+  <text x="904" y="492" text-anchor="middle" fill="#EF4444" font-family="Inter, sans-serif" font-size="12" font-weight="600">High</text>
+
+  <!-- Lauks 5: Piesaistītais lietotājs / Projekts -->
+  <text x="502" y="535" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="13" font-weight="600">Piešķirt projekta dalībniekam</text>
+  <rect x="502" y="545" width="436" height="44" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+  <circle cx="524" cy="567" r="10" fill="#8B5CF6"/>
+  <text x="524" y="570" text-anchor="middle" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="9" font-weight="600">AN</text>
+  <text x="542" y="572" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="13">Anna Noriņa (Mājas lapas redizains)</text>
+
+  <!-- Apakšējā Josla ar Pogām -->
+  <line x1="470" y1="680" x2="970" y2="680" stroke="#334155" stroke-width="1"/>
+
+  <!-- Poga: Atcelt -->
+  <rect x="680" y="700" width="110" height="40" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+  <text x="735" y="725" text-anchor="middle" fill="#94A3B8" font-family="Inter, sans-serif" font-size="14" font-weight="500">Atcelt</text>
+
+  <!-- Poga: Saglabāt -->
+  <rect x="800" y="700" width="138" height="40" rx="8" fill="#6366F1"/>
+  <text x="869" y="725" text-anchor="middle" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="14" font-weight="600">Izveidot uzdevumu</text>
+</svg>

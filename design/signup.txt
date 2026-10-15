@@ -1,0 +1,39 @@
+<svg width="1440" height="1024" viewBox="0 0 1440 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fons -->
+  <rect width="1440" height="1024" fill="#0F172A"/>
+  
+  <!-- Centrāla Kartīte -->
+  <rect x="500" y="162" width="440" height="700" rx="16" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+  
+  <!-- Logotips & Virsraksts -->
+  <circle cx="720" cy="220" r="20" fill="#6366F1"/>
+  <path d="M712 220L718 226L728 214" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <text x="720" y="270" text-anchor="middle" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="24" font-weight="700">Izveidot kontu</text>
+  <text x="720" y="295" text-anchor="middle" fill="#94A3B8" font-family="Inter, sans-serif" font-size="14">Sāc plānot un pārvaldīt savus projektus</text>
+  
+  <!-- Lauks: Vārds -->
+  <text x="540" y="340" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="14" font-weight="500">Pilns vārds</text>
+  <rect x="540" y="348" width="360" height="48" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+  <text x="556" y="378" fill="#94A3B8" font-family="Inter, sans-serif" font-size="14">Jānis Bērziņš</text>
+  
+  <!-- Lauks: E-pasts -->
+  <text x="540" y="424" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="14" font-weight="500">E-pasta adrese</text>
+  <rect x="540" y="432" width="360" height="48" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+  <text x="556" y="462" fill="#94A3B8" font-family="Inter, sans-serif" font-size="14">janis@piemera.lv</text>
+  
+  <!-- Lauks: Parole -->
+  <text x="540" y="508" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="14" font-weight="500">Parole</text>
+  <rect x="540" y="516" width="360" height="48" rx="8" fill="#0F172A" stroke="#334155" stroke-width="1"/>
+  <text x="556" y="548" fill="#94A3B8" font-family="Inter, sans-serif" font-size="18" letter-spacing="2">••••••••••••</text>
+  
+  <!-- Poga: Reģistrēties -->
+  <rect x="540" y="600" width="360" height="48" rx="8" fill="#6366F1"/>
+  <text x="720" y="630" text-anchor="middle" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="16" font-weight="600">Reģistrēties</text>
+  
+  <!-- Kājene -->
+  <text x="720" y="680" text-anchor="middle" font-family="Inter, sans-serif" font-size="14">
+    <tspan fill="#94A3B8">Jau ir konts? </tspan>
+    <tspan fill="#6366F1" font-weight="600">Pieslēgties</tspan>
+  </text>
+</svg>

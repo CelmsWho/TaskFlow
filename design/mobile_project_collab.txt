@@ -1,0 +1,68 @@
+<svg width="375" height="812" viewBox="0 0 375 812" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fons -->
+  <rect width="375" height="812" fill="#0F172A"/>
+
+  <!-- Mobilā Galvene -->
+  <rect width="375" height="64" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+  <circle cx="36" cy="32" r="10" fill="#6366F1"/>
+  <text x="54" y="37" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="16" font-weight="700">TaskFlow</text>
+  <circle cx="300" cy="32" r="14" fill="#6366F1"/>
+  <text x="300" y="36" text-anchor="middle" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="10" font-weight="600">JB</text>
+  <path d="M335 24H351M335 32H351M335 40H351" stroke="#F8FAFC" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Projekta nosaukums un komanda -->
+  <text x="20" y="95" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="18" font-weight="700">Mājas Lapas Redizains</text>
+  
+  <!-- Komandas avatari un + Uzaicināt poga -->
+  <circle cx="32" cy="122" r="12" fill="#6366F1" stroke="#0F172A" stroke-width="1.5"/>
+  <text x="32" y="125" text-anchor="middle" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="9" font-weight="600">JB</text>
+  
+  <circle cx="50" cy="122" r="12" fill="#8B5CF6" stroke="#0F172A" stroke-width="1.5"/>
+  <text x="50" y="125" text-anchor="middle" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="9" font-weight="600">AN</text>
+
+  <rect x="74" y="108" width="85" height="28" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+  <text x="116" y="126" text-anchor="middle" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="11" font-weight="500">+ Uzaicināt</text>
+
+  <!-- Kanban Kolonnu Izvēlne (Mobile Tabs) -->
+  <rect x="20" y="152" width="105" height="32" rx="16" fill="#6366F1"/>
+  <text x="72" y="172" text-anchor="middle" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="12" font-weight="600">To Do (2)</text>
+
+  <rect x="135" y="152" width="105" height="32" rx="16" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+  <text x="187" y="172" text-anchor="middle" fill="#94A3B8" font-family="Inter, sans-serif" font-size="12">In Progress (1)</text>
+
+  <rect x="250" y="152" width="105" height="32" rx="16" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+  <text x="302" y="172" text-anchor="middle" fill="#94A3B8" font-family="Inter, sans-serif" font-size="12">Done (1)</text>
+
+  <!-- Uzdevumu Saraksts konkrētajai kolonnai (To Do) -->
+
+  <!-- Kartīte 1 -->
+  <rect x="20" y="200" width="335" height="120" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+  <rect x="34" y="214" width="45" height="18" rx="9" fill="#EF4444" fill-opacity="0.15"/>
+  <text x="56" y="227" text-anchor="middle" fill="#EF4444" font-family="Inter, sans-serif" font-size="10" font-weight="600">High</text>
+  <text x="34" y="250" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="14" font-weight="600">UI/UX Pētījums un Wireframes</text>
+  <text x="34" y="270" fill="#94A3B8" font-family="Inter, sans-serif" font-size="11">Analizēt konkurentu mērķlapas</text>
+  <text x="34" y="298" fill="#64748B" font-family="Inter, sans-serif" font-size="11">Termiņš: 18. Okt</text>
+  <circle cx="330" cy="294" r="10" fill="#8B5CF6"/>
+  <text x="330" y="297" text-anchor="middle" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="8" font-weight="600">AN</text>
+
+  <!-- Kartīte 2 -->
+  <rect x="20" y="332" width="335" height="120" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+  <rect x="34" y="346" width="40" height="18" rx="9" fill="#10B981" fill-opacity="0.15"/>
+  <text x="54" y="359" text-anchor="middle" fill="#10B981" font-family="Inter, sans-serif" font-size="10" font-weight="600">Low</text>
+  <text x="34" y="382" fill="#F8FAFC" font-family="Inter, sans-serif" font-size="14" font-weight="600">Sagatavot ikonogrāfijas paku</text>
+  <text x="34" y="402" fill="#94A3B8" font-family="Inter, sans-serif" font-size="11">SVG formātā priekš izstrādātājiem</text>
+  <text x="34" y="430" fill="#64748B" font-family="Inter, sans-serif" font-size="11">Termiņš: 22. Okt</text>
+  <circle cx="330" cy="426" r="10" fill="#10B981"/>
+  <text x="330" y="429" text-anchor="middle" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="8" font-weight="600">KR</text>
+
+  <!-- FAB (+) Poga -->
+  <circle cx="315" cy="710" r="28" fill="#6366F1"/>
+  <path d="M315 698V722M303 710H327" stroke="white" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Apakšējā Navigācijas Josla -->
+  <rect y="748" width="375" height="64" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+  <text x="75" y="792" text-anchor="middle" fill="#94A3B8" font-family="Inter, sans-serif" font-size="11">Uzdevumi</text>
+  <circle cx="187" cy="770" r="4" fill="#6366F1"/>
+  <text x="187" y="792" text-anchor="middle" fill="#6366F1" font-family="Inter, sans-serif" font-size="11" font-weight="600">Projekti</text>
+  <text x="300" y="792" text-anchor="middle" fill="#94A3B8" font-family="Inter, sans-serif" font-size="11">Uzaicinājumi</text>
+</svg>
