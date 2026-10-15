@@ -1,151 +1,187 @@
 const express = require('express');
-const mysql = require('mysql2/promise');
+const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+
 app.use(express.json());
-app.use(cors());
 app.use(express.static('public'));
 
-// MySQL datubāzes baseināšana
-const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+const JWT_SECRET = process.env.JWT_SECRET || 'tava_slepena_atslēga_šeit';
+
+const db = mysql.createConnection({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'taskflow_db'
 });
 
-// Automātiskā tabulu izveide startējot serveri
-async function initDB() {
-    try {
-        // Pārliecināmies, ka datubāze eksistē vai pieslēdzamies tai
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                email VARCHAR(255) UNIQUE NOT NULL,
-                password VARCHAR(255) NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS tasks (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                user_id INT NOT NULL,
-                title VARCHAR(255) NOT NULL,
-                description TEXT,
-                priority ENUM('High', 'Medium', 'Low') DEFAULT 'Medium',
-                status ENUM('active', 'completed') DEFAULT 'active',
-                due_date VARCHAR(100),
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-        console.log('MySQL datubāze tabulas veiksmīgi sagatavotas!');
-    } catch (err) {
-        console.error('Datubāzes inicializācijas kļūda:', err);
+db.connect((err) => {
+    if (err) {
+        console.error('Kļūda pieslēdzoties MySQL:', err);
+        return;
     }
-}
-initDB();
+    console.log('Veiksmīgi pieslēgts MySQL datubāzei!');
 
-// JWT Middleware
-function authenticateToken(req, res, next) {
+    const createUserTable = `
+        CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL
+        )
+    `;
+    
+    const createTaskTable = `
+        CREATE TABLE IF NOT EXISTS tasks (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            description TEXT,
+            priority VARCHAR(50) DEFAULT 'Medium',
+            due_date VARCHAR(50),
+            status VARCHAR(50) DEFAULT 'active',
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    `;
+
+    db.query(createUserTable, (err) => {
+        if (err) console.error('Kļūda izveidojot users tabulu:', err);
+    });
+    db.query(createTaskTable, (err) => {
+        if (err) console.error('Kļūda izveidojot tasks tabulu:', err);
+    });
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/login.html');
+});
+
+// Autentifikācija
+app.post('/api/auth/register', async (req, res) => {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+        return res.status(400).json({ error: 'Lūdzu, aizpildi visus laukus' });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const query = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
+        
+        db.query(query, [name, email, hashedPassword], (err, result) => {
+            if (err) {
+                if (err.code === 'ER_DUP_ENTRY') {
+                    return res.status(400).json({ error: 'E-pasts jau ir reģistrēts' });
+                }
+                return res.status(500).json({ error: err.message });
+            }
+
+            const userId = result.insertId;
+            const token = jwt.sign({ id: userId, email }, JWT_SECRET, { expiresIn: '24h' });
+            
+            res.status(201).json({
+                message: 'Lietotājs veiksmīgi reģistrēts',
+                token,
+                user: { id: userId, name, email }
+            });
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Servera kļūda' });
+    }
+});
+
+app.post('/api/auth/login', (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Lūdzu, ievadi e-pastu un paroli' });
+    }
+
+    const query = 'SELECT * FROM users WHERE email = ?';
+    db.query(query, [email], async (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (results.length === 0) {
+            return res.status(401).json({ error: 'Nepareizs e-pasts vai parole' });
+        }
+
+        const user = results[0];
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ error: 'Nepareizs e-pasts vai parole' });
+        }
+
+        const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
+        res.json({
+            message: 'Veiksmīga pieteikšanās',
+            token,
+            user: { id: user.id, name: user.name, email: user.email }
+        });
+    });
+});
+
+function verifyToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Nav piekļuves pilnvaras' });
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ error: 'Nederīga pilnvara' });
+    if (!token) return res.status(401).json({ error: 'Nav autorizācijas tokena' });
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ error: 'Nederīgs vai beidzies tokens' });
         req.user = user;
         next();
     });
 }
 
-// --- AUTORIZĀCIJA ---
-app.post('/api/auth/register', async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const [result] = await pool.query(
-            'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-            [name, email, hashedPassword]
-        );
-
-        const token = jwt.sign({ id: result.insertId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.json({ token, user: { id: result.insertId, name, email } });
-    } catch (err) {
-        if (err.code === 'ER_DUP_ENTRY') {
-            res.status(400).json({ error: 'E-pasts jau ir reģistrēts' });
-        } else {
-            res.status(500).json({ error: 'Servera kļūda reģistrējoties' });
-        }
-    }
+// Uzdevumu CRUD
+app.get('/api/tasks', verifyToken, (req, res) => {
+    const userId = req.user.id;
+    const query = 'SELECT * FROM tasks WHERE user_id = ? ORDER BY id DESC';
+    db.query(query, [userId], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
 });
 
-app.post('/api/auth/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+app.post('/api/tasks', verifyToken, (req, res) => {
+    const { title, description, priority, due_date } = req.body;
+    const userId = req.user.id;
 
-        if (users.length === 0) return res.status(400).json({ error: 'Nepareizs e-pasts vai parole' });
+    if (!title) return res.status(400).json({ error: 'Uzdevuma nosaukums ir obligāts' });
 
-        const user = users[0];
-        const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) return res.status(400).json({ error: 'Nepareizs e-pasts vai parole' });
-
-        const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
-    } catch (err) {
-        res.status(500).json({ error: 'Servera kļūda pieteicaties' });
-    }
+    const query = 'INSERT INTO tasks (user_id, title, description, priority, due_date, status) VALUES (?, ?, ?, ?, ?, "active")';
+    db.query(query, [userId, title, description || '', priority || 'Medium', due_date || 'Nenorādīts'], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.status(201).json({ message: 'Uzdevums veiksmīgi izveidots', taskId: result.insertId });
+    });
 });
 
-// --- UZDEVUMU API ---
-app.get('/api/tasks', authenticateToken, async (req, res) => {
-    try {
-        const [tasks] = await pool.query('SELECT * FROM tasks WHERE user_id = ? ORDER BY id DESC', [req.user.id]);
-        res.json(tasks);
-    } catch (err) {
-        res.status(500).json({ error: 'Neizdevās ielādēt uzdevumus' });
-    }
+app.patch('/api/tasks/:id/toggle', verifyToken, (req, res) => {
+    const taskId = req.params.id;
+    const { status } = req.body;
+    const userId = req.user.id;
+
+    const query = 'UPDATE tasks SET status = ? WHERE id = ? AND user_id = ?';
+    db.query(query, [status, taskId, userId], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.affectedRows === 0) return res.status(404).json({ error: 'Uzdevums nav atrasts' });
+        res.json({ message: 'Uzdevuma statuss atjaunināts' });
+    });
 });
 
-app.post('/api/tasks', authenticateToken, async (req, res) => {
-    try {
-        const { title, description, priority, due_date } = req.body;
-        const [result] = await pool.query(
-            'INSERT INTO tasks (user_id, title, description, priority, due_date) VALUES (?, ?, ?, ?, ?)',
-            [req.user.id, title, description || '', priority || 'Medium', due_date || 'Šodien']
-        );
-        res.json({ id: result.insertId, title, description, priority, status: 'active' });
-    } catch (err) {
-        res.status(500).json({ error: 'Neizdevās izveidot uzdevumu' });
-    }
-});
+app.delete('/api/tasks/:id', verifyToken, (req, res) => {
+    const taskId = req.params.id;
+    const userId = req.user.id;
 
-app.patch('/api/tasks/:id/toggle', authenticateToken, async (req, res) => {
-    try {
-        const { status } = req.body;
-        await pool.query('UPDATE tasks SET status = ? WHERE id = ? AND user_id = ?', [status, req.params.id, req.user.id]);
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: 'Neizdevās atjaunināt uzdevumu' });
-    }
-});
-
-app.delete('/api/tasks/:id', authenticateToken, async (req, res) => {
-    try {
-        await pool.query('DELETE FROM tasks WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: 'Neizdevās dzēst uzdevumu' });
-    }
+    const query = 'DELETE FROM tasks WHERE id = ? AND user_id = ?';
+    db.query(query, [taskId, userId], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.affectedRows === 0) return res.status(404).json({ error: 'Uzdevums nav atrasts' });
+        res.json({ message: 'Uzdevums veiksmīgi izdzēsts' });
+    });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`MyTasks serveris palaists uz http://localhost:${PORT}`));
+app.listen(PORT, () => {
+    console.log(`Serveris palaists un darbojas uz http://localhost:${PORT}`);
+});

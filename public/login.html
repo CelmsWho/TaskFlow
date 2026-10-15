@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyTasks - Autorizācija</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="auth-icon">
+            <svg width="24" height="24" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+
+        <!-- Login form -->
+        <div id="login-view">
+            <h2 class="auth-title">Laipni lūdzam atpakaļ!</h2>
+            <p class="auth-subtitle">Piesakies, lai turpinātu darbu ar uzdevumiem</p>
+            <form id="login-form">
+                <div class="form-group">
+                    <input type="email" id="login-email" placeholder="E-pasts" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <input type="password" id="login-password" placeholder="Parole" class="form-input" required />
+                </div>
+                <button type="submit" class="btn-primary">Pieteikties</button>
+            </form>
+            <div class="auth-footer">
+                <p>Nav konta? <button type="button" onclick="switchAuthView('register')">Reģistrēties</button></p>
+            </div>
+        </div>
+
+        <!-- Register form -->
+        <div id="register-view" class="hidden">
+            <h2 class="auth-title">Izveidot kontu</h2>
+            <p class="auth-subtitle">Aizpildi laukus, lai sāktu izmantot MyTasks</p>
+            <form id="register-form">
+                <div class="form-group">
+                    <input type="text" id="register-name" placeholder="Vārds" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <input type="email" id="register-email" placeholder="E-pasts" class="form-input" required />
+                </div>
+                <div class="form-group">
+                    <input type="password" id="register-password" placeholder="Parole" class="form-input" required />
+                </div>
+                <button type="submit" class="btn-primary">Reģistrēties</button>
+            </form>
+            <div class="auth-footer">
+                <p>Jau ir konts? <button type="button" onclick="switchAuthView('login')">Pieteikties</button></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>
