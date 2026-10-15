@@ -9,17 +9,21 @@ body {
     background-color: #0F172A;
     color: #F8FAFC;
     min-height: 100vh;
+    width: 100vw;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+    overflow-x: hidden;
 }
 
 .hidden {
     display: none !important;
 }
 
-/* Autorizācijas kartīte */
+body:has(.auth-container) {
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
 .auth-container {
     width: 100%;
     max-width: 420px;
@@ -83,7 +87,20 @@ body {
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
-/* Uzlabota primārā poga (Pieteikties / Reģistrēties) */
+.form-textarea {
+    width: 100%;
+    background-color: #0F172A;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 12px;
+    color: #F8FAFC;
+    font-size: 14px;
+    outline: none;
+    resize: none;
+    height: 80px;
+}
+.form-textarea:focus { border-color: #6366F1; }
+
 .btn-primary {
     width: 100%;
     background-color: #6366F1;
@@ -110,6 +127,18 @@ body {
     transform: scale(0.99);
 }
 
+.btn-secondary {
+    background-color: #0F172A;
+    color: #94A3B8;
+    border: 1px solid #334155;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+}
+.btn-secondary:hover { color: #F8FAFC; border-color: #475569; }
+
 .auth-footer {
     text-align: center;
     margin-top: 24px;
@@ -130,20 +159,29 @@ body {
     color: #818cf8;
 }
 
-/* Dashboard izkārtojums */
 .dashboard-container {
-    width: 1440px;
-    height: 900px;
+    width: 100vw;
+    height: 100vh;
     background-color: #0F172A;
-    border: 1px solid #334155;
-    border-radius: 24px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
     display: flex;
     overflow: hidden;
+    position: relative;
+}
+
+.mobile-header-bar {
+    display: none;
+}
+
+.mobile-drawer {
+    display: none;
 }
 
 .sidebar {
     width: 260px;
+    min-width: 260px;
     background-color: #1E293B;
     border-right: 1px solid #334155;
     padding: 24px;
@@ -274,10 +312,9 @@ body {
 }
 .logout-btn:hover { color: #EF4444; }
 
-/* Galvenais saturs */
 .main-content {
     flex: 1;
-    padding: 32px;
+    padding: 32px 40px;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
@@ -297,7 +334,6 @@ body {
     color: #F8FAFC;
 }
 
-/* Statistikas kartītes */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -327,7 +363,6 @@ body {
 .text-green { color: #10B981 !important; }
 .text-red { color: #EF4444 !important; }
 
-/* Filtru josla */
 .filter-bar {
     display: flex;
     justify-content: space-between;
@@ -352,7 +387,6 @@ body {
     font-weight: 500;
 }
 
-/* Kalendāra pogas un tumšā popupa stili */
 .date-picker-wrapper {
     position: relative;
     display: block;
@@ -412,7 +446,6 @@ body {
     margin-bottom: 8px;
 }
 
-/* Uzdevumu saraksts */
 .task-list {
     display: flex;
     flex-direction: column;
@@ -435,7 +468,6 @@ body {
     gap: 16px;
 }
 
-/* Apaļš pelēks checkbox */
 .task-checkbox {
     appearance: none;
     width: 24px;
@@ -550,18 +582,18 @@ body {
     color: #64748B;
 }
 
-/* Modālais logs */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(2, 6, 23, 0.75);
+    background-color: rgba(2, 6, 23, 0.8);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 9999;
+    pointer-events: auto;
 }
 
 .modal-container {
@@ -571,6 +603,21 @@ body {
     border-radius: 16px;
     padding: 24px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    pointer-events: auto;
+}
+
+.modal-drag-handle {
+    display: block;
+    width: 40px;
+    height: 4px;
+    background-color: #475569;
+    border-radius: 2px;
+    margin: 0 auto 16px auto;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.modal-drag-handle:hover {
+    background-color: #6366F1;
 }
 
 .modal-header {
@@ -646,4 +693,202 @@ body {
     margin-top: 24px;
     padding-top: 16px;
     border-top: 1px solid #334155;
+}
+
+.mobile-fab, .mobile-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 0;
+        align-items: stretch;
+    }
+
+    .auth-container {
+        max-width: 100%;
+        padding: 24px;
+        border-radius: 16px;
+        border: none;
+    }
+
+    .dashboard-container {
+        width: 100vw;
+        height: 100vh;
+        flex-direction: column;
+    }
+
+    .mobile-header-bar {
+        display: flex;
+        width: 100%;
+        height: 64px;
+        background-color: #1E293B;
+        border-bottom: 1px solid #334155;
+        padding: 0 20px;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 800;
+    }
+
+    .mobile-drawer {
+        display: flex;
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 280px;
+        height: 100dvh;
+        background-color: #1E293B;
+        border-left: 1px solid #334155;
+        z-index: 11000;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 24px 24px 60px 24px;
+        box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        overflow-y: auto;
+        transition: transform 0.3s ease;
+    }
+
+    .mobile-drawer.hidden {
+        transform: translateX(100%);
+        display: none !important;
+    }
+
+    .mobile-drawer-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .mobile-drawer .user-profile {
+        margin-top: auto; 
+        padding-top: 20px;
+        border-top: 1px solid #334155;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .main-content {
+        padding: 16px;
+        padding-top: 80px;
+        padding-bottom: 90px;
+    }
+
+    .main-header button#open-modal-btn {
+        display: none;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 12px 6px;
+        text-align: center;
+    }
+
+    .stat-card p {
+        font-size: 11px;
+    }
+
+    .stat-card h3 {
+        font-size: 18px;
+    }
+
+    .task-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .task-item-right {
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .modal-overlay {
+        align-items: flex-end;
+        background-color: rgba(2, 6, 23, 0.85);
+        z-index: 12000;
+    }
+
+    .modal-container {
+        width: 100%;
+        max-width: 100%;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 20px 20px 48px 20px;
+    }
+
+    .modal-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .modal-footer {
+        margin-top: 20px;
+        padding-bottom: 10px;
+        gap: 10px;
+    }
+
+    .mobile-fab {
+        display: flex;
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        background-color: #6366F1;
+        press-radius: 50%;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
+        cursor: pointer;
+        z-index: 900;
+        border: none;
+        color: white;
+    }
+
+    .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 64px;
+        background-color: #1E293B;
+        border-top: 1px solid #334155;
+        align-items: center;
+        justify-content: space-around;
+        z-index: 890;
+        padding: 0 20px;
+    }
+
+    .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        color: #94A3B8;
+        font-size: 11px;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .mobile-nav-item.active {
+        color: #6366F1;
+        font-weight: 600;
+    }
 }

@@ -1,297 +1,326 @@
 document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
-    const userName = localStorage.getItem('userName');
-
     if (!token) {
         window.location.href = 'login.html';
         return;
     }
 
-    if (userName) {
-        document.getElementById('user-name-display').textContent = userName;
-        const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-        document.getElementById('user-avatar').textContent = initials;
-    }
+    const userName = localStorage.getItem('userName') || 'Admin';
+    const initials = userName
+        .split(' ')
+        .filter(n => n.length > 0)
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
 
-    document.getElementById('logout-btn').addEventListener('click', () => {
+    document.querySelectorAll('#user-name-display, #drawer-user-name').forEach(el => {
+        if (el) el.textContent = userName;
+    });
+
+    document.querySelectorAll('#user-avatar, #mobile-user-avatar, #drawer-user-avatar').forEach(el => {
+        if (el) el.textContent = initials;
+    });
+
+    const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('userName');
         window.location.href = 'login.html';
-    });
+    };
 
-    // Modālā loga un kalendāra pogas / popupa loģika
-    const modal = document.getElementById('task-modal');
-    const openModalBtn = document.getElementById('open-modal-btn');
-    const closeModalBtn = document.getElementById('close-modal-btn');
-    const cancelModalBtn = document.getElementById('cancel-modal-btn');
-    const modalTaskForm = document.getElementById('modal-task-form');
+    document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
+    document.getElementById('drawer-logout-btn')?.addEventListener('click', handleLogout);
 
-    let finalDueDate = '';
-    let selectedDate = '';
-    const calendarBtn = document.getElementById('calendar-btn');
-    const hiddenDateInput = document.getElementById('hidden-date-input');
-    const timePopup = document.getElementById('time-popup');
-    const popupTimeInput = document.getElementById('popup-time-input');
-    const confirmTimeBtn = document.getElementById('confirm-time-btn');
-    const dateBtnText = document.getElementById('date-btn-text');
-
-    calendarBtn.addEventListener('click', () => {
-        if (hiddenDateInput.showPicker) {
-            hiddenDateInput.showPicker();
-        } else {
-            hiddenDateInput.click();
-        }
-    });
-
-    hiddenDateInput.addEventListener('change', (e) => {
-        selectedDate = e.target.value;
-        if (selectedDate) {
-            timePopup.classList.remove('hidden');
-        }
-    });
-
-    confirmTimeBtn.addEventListener('click', () => {
-        const timeVal = popupTimeInput.value || '12:00';
-        finalDueDate = `${selectedDate} ${timeVal}`;
-        dateBtnText.textContent = formatFriendlyDate(finalDueDate);
-        dateBtnText.style.color = '#F8FAFC';
-        timePopup.classList.add('hidden');
-    });
-
-    openModalBtn.addEventListener('click', () => modal.classList.remove('hidden'));
-    
-    function closeModal() {
-        modal.classList.add('hidden');
-        timePopup.classList.add('hidden');
-        modalTaskForm.reset();
-        finalDueDate = '';
-        selectedDate = '';
-        dateBtnText.textContent = 'Izvēlēties datumu';
-        dateBtnText.style.color = '#94A3B8';
-    }
-
-    closeModalBtn.addEventListener('click', closeModal);
-    cancelModalBtn.addEventListener('click', closeModal);
-
-    // Prioritāšu izvēle modālajā logā
-    const priorityOptions = document.querySelectorAll('.priority-option');
-    const modalPriorityInput = document.getElementById('modal-priority');
-
-    priorityOptions.forEach(btn => {
-        btn.addEventListener('click', () => {
-            priorityOptions.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            modalPriorityInput.value = btn.getAttribute('data-priority');
-        });
-    });
-
+    let tasks = [];
     let currentFilter = 'All';
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            filterButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter = btn.getAttribute('data-filter');
-            loadTasks();
-        });
-    });
+    let selectedTaskDate = 'Šodien';
+    let activeView = 'tasks'; // 'tasks', 'projects', 'invitations'
 
-    let allTasks = [];
-
-    loadTasks();
+    const taskListEl = document.getElementById('task-list');
+    const completedTaskListEl = document.getElementById('completed-task-list');
+    const countActiveEl = document.getElementById('count-active');
+    const countCompletedEl = document.getElementById('count-completed');
+    const countHighEl = document.getElementById('count-high');
+    const completedHeaderEl = document.getElementById('completed-header');
+    const mainHeaderTitle = document.querySelector('.main-header h1');
 
     async function loadTasks() {
+        if (activeView !== 'tasks') return;
         try {
-            const res = await fetch('/api/tasks', {
+            const response = await fetch('/api/tasks', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (res.status === 401 || res.status === 403) {
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
-                return;
+            if (response.ok) {
+                tasks = await response.json();
+                renderTasks();
+            } else if (response.status === 401 || response.status === 403) {
+                handleLogout();
             }
-            allTasks = await res.json();
-            renderTasks();
         } catch (err) {
             console.error('Kļūda ielādējot uzdevumus:', err);
         }
     }
 
-    function renderTasks() {
-        const taskList = document.getElementById('task-list');
-        const completedTaskList = document.getElementById('completed-task-list');
+    async function loadProjects() {
+        mainHeaderTitle.textContent = 'Kopīgie Projekti';
+        taskListEl.innerHTML = '<p style="color: #94A3B8; padding: 20px;">Šeit tiks attēloti tavi kopīgie projekti.</p>';
+        completedTaskListEl.innerHTML = '';
+        if (completedHeaderEl) completedHeaderEl.style.display = 'none';
+    }
 
-        taskList.innerHTML = '';
-        completedTaskList.innerHTML = '';
+    async function loadInvitations() {
+        mainHeaderTitle.textContent = 'Uzaicinājumi';
+        try {
+            const res = await fetch('/api/invitations', { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            taskListEl.innerHTML = data.length === 0 ? '<p style="color: #94A3B8; padding: 20px;">Nav jaunu uzaicinājumu.</p>' : '';
+            data.forEach(inv => {
+                taskListEl.innerHTML += `<div class="task-item"><p class="task-title-text">${inv.project_name}</p><span class="task-date">No: ${inv.sender}</span></div>`;
+            });
+        } catch (err) {
+            taskListEl.innerHTML = '<p style="color: #94A3B8; padding: 20px;">Kļūda ielādējot uzaicinājumus.</p>';
+        }
+        completedTaskListEl.innerHTML = '';
+        if (completedHeaderEl) completedHeaderEl.style.display = 'none';
+    }
+
+    // Navigācijas pogu pārslēgšana (Sānjosla un mobilā izvēlne)
+    document.querySelectorAll('.nav-item, .mobile-nav-item').forEach((item, index) => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+
+            const text = item.textContent.trim();
+            if (text.includes('Uzdevumi')) {
+                activeView = 'tasks';
+                mainHeaderTitle.textContent = 'Mani Uzdevumi';
+                if (completedHeaderEl) completedHeaderEl.style.display = 'block';
+                loadTasks();
+            } else if (text.includes('Projekti')) {
+                activeView = 'projects';
+                loadProjects();
+            } else if (text.includes('Uzaicinājumi')) {
+                activeView = 'invitations';
+                loadInvitations();
+            }
+
+            // Aizver mobilo drawer, ja tāds ir atvērts
+            document.getElementById('mobile-menu-drawer')?.classList.add('hidden');
+        });
+    });
+
+    function renderTasks() {
+        if (activeView !== 'tasks' || !taskListEl) return;
+        taskListEl.innerHTML = '';
+        completedTaskListEl.innerHTML = '';
 
         let activeCount = 0;
         let completedCount = 0;
         let highCount = 0;
 
-        const filteredTasks = allTasks.filter(task => {
-            if (task.status !== 'completed' && task.priority === 'High') {
-                highCount++;
-            }
-            if (task.status === 'completed') {
-                completedCount++;
-            } else {
+        tasks.forEach(task => {
+            const isCompleted = task.completed === 1 || task.completed === true;
+
+            if (!isCompleted) {
                 activeCount++;
-            }
-
-            if (currentFilter === 'All') return true;
-            return task.priority === currentFilter;
-        });
-
-        filteredTasks.forEach(task => {
-            const isCompleted = task.status === 'completed';
-            const initials = userName ? userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'JB';
-            
-            if (isCompleted) {
-                const item = document.createElement('div');
-                item.className = 'task-item completed';
-                item.innerHTML = `
-                    <div class="task-item-left">
-                        <input type="checkbox" checked onchange="toggleTask(${task.id}, 'active')" class="task-checkbox" />
-                        <div>
-                            <h4 class="task-title-text" style="text-decoration: line-through;">${escapeHtml(task.title)}</h4>
-                            ${task.description ? `<p class="task-desc-text">${escapeHtml(task.description)}</p>` : ''}
-                        </div>
-                    </div>
-                    <div class="task-item-right">
-                        <span class="priority-badge badge-${task.priority.toLowerCase()}">${task.priority}</span>
-                        <span class="task-date">${formatFriendlyDate(task.due_date)}</span>
-                        <div class="task-avatar">${initials}</div>
-                        <button onclick="deleteTask(${task.id})" class="delete-btn">Dzēst</button>
-                    </div>
-                `;
-                completedTaskList.appendChild(item);
+                if (task.priority === 'High') highCount++;
             } else {
-                const item = document.createElement('div');
-                item.className = 'task-item';
-                item.innerHTML = `
-                    <div class="task-item-left">
-                        <input type="checkbox" onchange="toggleTask(${task.id}, 'completed')" class="task-checkbox" />
-                        <div>
-                            <h4 class="task-title-text">${escapeHtml(task.title)}</h4>
-                            ${task.description ? `<p class="task-desc-text">${escapeHtml(task.description)}</p>` : ''}
-                        </div>
+                completedCount++;
+            }
+
+            if (currentFilter !== 'All' && task.priority !== currentFilter && !isCompleted) {
+                return;
+            }
+
+            const taskItem = document.createElement('div');
+            taskItem.className = `task-item ${isCompleted ? 'completed' : ''}`;
+            
+            taskItem.innerHTML = `
+                <div class="task-item-left">
+                    <input type="checkbox" class="task-checkbox" ${isCompleted ? 'checked' : ''} data-id="${task.id}" />
+                    <div>
+                        <p class="task-title-text">${task.title}</p>
+                        <p class="task-desc-text">${task.description || ''}</p>
                     </div>
-                    <div class="task-item-right">
-                        <span class="priority-badge badge-${task.priority.toLowerCase()}">${task.priority}</span>
-                        <span class="task-date">${formatFriendlyDate(task.due_date)}</span>
-                        <div class="task-avatar">${initials}</div>
-                        <button onclick="deleteTask(${task.id})" class="delete-btn">Dzēst</button>
-                    </div>
-                `;
-                taskList.appendChild(item);
+                </div>
+                <div class="task-item-right">
+                    <span class="priority-badge badge-${task.priority.toLowerCase()}">${task.priority}</span>
+                    <span class="task-date">${task.task_date || 'Šodien'}</span>
+                    <div class="task-avatar">${initials}</div>
+                    <button class="delete-btn" data-id="${task.id}">Dzēst</button>
+                </div>
+            `;
+
+            if (isCompleted) {
+                completedTaskListEl.appendChild(taskItem);
+            } else {
+                taskListEl.appendChild(taskItem);
             }
         });
 
-        document.getElementById('count-active').textContent = allTasks.filter(t => t.status !== 'completed').length;
-        document.getElementById('count-completed').textContent = completedCount;
-        document.getElementById('count-high').textContent = allTasks.filter(t => t.status !== 'completed' && t.priority === 'High').length;
-        document.getElementById('completed-header').textContent = `PABEIGTIE UZDEVUMI (${completedCount})`;
+        if (countActiveEl) countActiveEl.textContent = activeCount;
+        if (countCompletedEl) countCompletedEl.textContent = completedCount;
+        if (countHighEl) countHighEl.textContent = highCount;
+        if (completedHeaderEl) {
+            completedHeaderEl.style.display = 'block';
+            completedHeaderEl.textContent = `PABEIGTIE UZDEVUMI (${completedCount})`;
+        }
     }
 
-    modalTaskForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const title = document.getElementById('modal-title').value.trim();
-        const description = document.getElementById('modal-description').value.trim();
-        const priority = document.getElementById('modal-priority').value;
-
-        if (!title || !finalDueDate) {
-            alert('Lūdzu, ievadi nosaukumu un izvēlies termiņu (datumu un laiku)!');
-            return;
-        }
-
-        try {
-            const res = await fetch('/api/tasks', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ title, description, priority, due_date: finalDueDate })
-            });
-
-            if (res.ok) {
-                closeModal();
+    document.addEventListener('change', async (e) => {
+        if (e.target.classList.contains('task-checkbox')) {
+            const id = e.target.getAttribute('data-id');
+            const completed = e.target.checked;
+            try {
+                await fetch(`/api/tasks/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ completed })
+                });
                 loadTasks();
-            } else {
-                alert('Neizdevās izveidot uzdevumu.');
+            } catch (err) {
+                console.error('Kļūda:', err);
             }
-        } catch (err) {
-            console.error('Kļūda:', err);
         }
     });
 
-    window.toggleTask = async function(id, newStatus) {
-        try {
-            await fetch(`/api/tasks/${id}/toggle`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ status: newStatus })
-            });
-            loadTasks();
-        } catch (err) {
-            console.error('Kļūda:', err);
+    document.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('delete-btn')) {
+            const id = e.target.getAttribute('data-id');
+            try {
+                await fetch(`/api/tasks/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadTasks();
+            } catch (err) {
+                console.error('Kļūda:', err);
+            }
+        }
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.getAttribute('data-filter');
+            renderTasks();
+        });
+    });
+
+    const modal = document.getElementById('task-modal');
+    const openModalBtn = document.getElementById('open-modal-btn');
+    const mobileOpenModalBtn = document.getElementById('mobile-open-modal-btn');
+    const cancelModalBtn = document.getElementById('cancel-modal-btn');
+    const dragHandle = document.getElementById('modal-drag-handle');
+
+    const toggleModal = (show) => {
+        if (modal) {
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
         }
     };
 
-    window.deleteTask = async function(id) {
-        try {
-            await fetch(`/api/tasks/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            loadTasks();
-        } catch (err) {
-            console.error('Kļūda:', err);
-        }
-    };
+    openModalBtn?.addEventListener('click', () => toggleModal(true));
+    mobileOpenModalBtn?.addEventListener('click', () => toggleModal(true));
+    cancelModalBtn?.addEventListener('click', () => toggleModal(false));
+    dragHandle?.addEventListener('click', () => toggleModal(false));
 
-    function formatFriendlyDate(dateStr) {
-        if (!dateStr || dateStr === 'Nenorādīts') return '';
+    const priorityButtons = document.querySelectorAll('.priority-option');
+    const priorityInput = document.getElementById('modal-priority');
 
-        const cleanStr = dateStr.replace('T', ' ');
-        const [datePart, timePart] = cleanStr.split(' ');
-        if (!datePart) return dateStr;
+    priorityButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            priorityButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (priorityInput) priorityInput.value = btn.getAttribute('data-priority');
+        });
+    });
 
-        const [year, month, day] = datePart.split('-').map(Number);
-        const targetDate = new Date(year, month - 1, day);
+    const taskForm = document.getElementById('modal-task-form');
+    if (taskForm) {
+        taskForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('modal-title').value;
+            const description = document.getElementById('modal-description').value;
+            const priority = priorityInput ? priorityInput.value : 'Medium';
+            const task_date = selectedTaskDate;
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+            try {
+                const response = await fetch('/api/tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ title, description, priority, task_date })
+                });
 
-        const targetDay = new Date(targetDate);
-        targetDay.setHours(0, 0, 0, 0);
-
-        const diffTime = targetDay - today;
-        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-
-        const timeFormatted = timePart ? ` ${timePart.substring(0, 5)}` : '';
-
-        if (diffDays === 0) {
-            return `Šodien${timeFormatted}`;
-        } else if (diffDays === 1) {
-            return `Rīt${timeFormatted}`;
-        } else if (diffDays === -1) {
-            return `Vakar${timeFormatted}`;
-        } else {
-            const monthNames = [
-                'Janvāris', 'Februāris', 'Marts', 'Aprīlis', 'Maijs', 'Jūnijs',
-                'Jūlijs', 'Augusts', 'Septembris', 'Oktobris', 'Novembris', 'Decembris'
-            ];
-            const monthName = monthNames[month - 1];
-            return `${day}. ${monthName}${timeFormatted}`;
-        }
+                if (response.ok) {
+                    taskForm.reset();
+                    if (priorityInput) priorityInput.value = 'Medium';
+                    priorityButtons.forEach(b => {
+                        if (b.getAttribute('data-priority') === 'Medium') b.classList.add('active');
+                        else b.classList.remove('active');
+                    });
+                    selectedTaskDate = 'Šodien';
+                    const dateBtnText = document.getElementById('date-btn-text');
+                    if (dateBtnText) dateBtnText.textContent = 'Šodien';
+                    toggleModal(false);
+                    loadTasks();
+                }
+            } catch (err) {
+                console.error('Kļūda:', err);
+            }
+        });
     }
 
-    function escapeHtml(text) {
-        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-    }
+    const calendarBtn = document.getElementById('calendar-btn');
+    const hiddenDateInput = document.getElementById('hidden-date-input');
+    const timePopup = document.getElementById('time-popup');
+    const confirmTimeBtn = document.getElementById('confirm-time-btn');
+    const popupTimeInput = document.getElementById('popup-time-input');
+    const dateBtnText = document.getElementById('date-btn-text');
+    let calendarDateValue = '';
+
+    calendarBtn?.addEventListener('click', () => {
+        hiddenDateInput.showPicker ? hiddenDateInput.showPicker() : hiddenDateInput.click();
+    });
+
+    hiddenDateInput?.addEventListener('change', (e) => {
+        calendarDateValue = e.target.value;
+        if (calendarDateValue && timePopup) timePopup.classList.remove('hidden');
+    });
+
+    confirmTimeBtn?.addEventListener('click', () => {
+        const timeValue = popupTimeInput ? popupTimeInput.value : '12:00';
+        if (calendarDateValue) {
+            const selectedDate = new Date(calendarDateValue);
+            const today = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(today.getDate() + 1);
+
+            const isToday = selectedDate.toDateString() === today.toDateString();
+            const isTomorrow = selectedDate.toDateString() === tomorrow.toDateString();
+
+            const months = ['janvāris', 'februāris', 'marts', 'aprīlis', 'maijs', 'jūnijs', 'jūlijs', 'augusts', 'septembris', 'oktobris', 'novembris', 'decembris'];
+            const day = selectedDate.getDate();
+            const month = months[selectedDate.getMonth()];
+
+            let formatted = `${day}. ${month}`;
+            if (isToday) formatted = 'Šodien';
+            if (isTomorrow) formatted = 'Rīt';
+
+            selectedTaskDate = `${formatted} ${timeValue}`;
+            if (dateBtnText) dateBtnText.textContent = selectedTaskDate;
+        }
+        timePopup?.classList.add('hidden');
+    });
+
+    loadTasks();
+
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const mobileMenuDrawer = document.getElementById('mobile-menu-drawer');
+    const closeDrawerBtn = document.getElementById('close-drawer-btn');
+
+    hamburgerBtn?.addEventListener('click', () => mobileMenuDrawer?.classList.remove('hidden'));
+    closeDrawerBtn?.addEventListener('click', () => mobileMenuDrawer?.classList.add('hidden'));
 });
